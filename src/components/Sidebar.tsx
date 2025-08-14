@@ -12,6 +12,9 @@ interface SidebarProps {
     peakTeide: () => void;
     coast: () => void;
   };
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -21,9 +24,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   testLog,
   eventHandlers,
   testCoordinates,
+  isMobile = false,
+  isOpen = false,
+  onClose,
 }) => {
+  // Determine sidebar classes
+  const sidebarClasses = `sidebar ${isMobile && isOpen ? 'mobile-open' : ''}`;
+
   return (
-    <aside className="sidebar">
+    <aside className={sidebarClasses}>
+      {/* Mobile close button */}
+      {isMobile && onClose && (
+        <button className="mobile-close" onClick={onClose}>
+          ✕
+        </button>
+      )}
+      
       <h1>🏝️ Tenerife — DEM + Gravity Lava</h1>
       <p>
         Manual alignment controls + semi‑transparent lava grid. Use these to rotate{' '}

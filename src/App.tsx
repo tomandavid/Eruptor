@@ -1,15 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './App.css';
 import { AppConfig, TestLogEntry } from './types';
-import { DEFAULT_VALUES } from './constants';
+import { DEFAULT_VALUES, MOBILE_VALUES } from './constants';
 import Sidebar from './components/Sidebar';
 import Viewport from './components/Viewport';
 
 function App() {
-  // App configuration state
+  // Mobile state (check early for initial config)
+  const initialIsMobile = window.innerWidth <= 768;
+
+  // App configuration state with mobile optimizations
   const [config, setConfig] = useState<AppConfig>({
-    resolution: DEFAULT_VALUES.RESOLUTION,
-    zoom: DEFAULT_VALUES.ZOOM,
+    resolution: initialIsMobile ? MOBILE_VALUES.RESOLUTION : DEFAULT_VALUES.RESOLUTION,
+    zoom: initialIsMobile ? MOBILE_VALUES.ZOOM : DEFAULT_VALUES.ZOOM,
     exaggeration: DEFAULT_VALUES.EXAGGERATION,
     seaLevel: DEFAULT_VALUES.SEA_LEVEL,
     showWater: false,
@@ -32,10 +35,33 @@ function App() {
   // Viewport reference for direct access to Three.js methods
   const [viewportRef, setViewportRef] = useState<any>(null);
 
+  // Mobile state
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
   // Log function for tests and diagnostics
   const log = useCallback((message: string, type: 'ok' | 'fail' | '' = '') => {
     setTestLog(prev => [...prev, { message, type }]);
   }, []);
+
+  // Mobile detection and resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setIsSidebarOpen(false); // Close sidebar when switching to desktop
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Toggle mobile sidebar
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarOpen(!isSidebarOpen);
+  }, [isSidebarOpen]);
 
   // Event handlers for configuration changes
   const handleConfigChange = useCallback(<K extends keyof AppConfig>(
@@ -183,6 +209,13 @@ function App() {
 
   return (
     <div className="app">
+      {/* Mobile toggle button */}
+      {isMobile && (
+        <button className="mobile-toggle" onClick={toggleSidebar}>
+          ☰
+        </button>
+      )}
+      
       <Sidebar
         config={config}
         coordinates={coordinates}
@@ -190,14 +223,21 @@ function App() {
         testLog={testLog}
         eventHandlers={eventHandlers}
         testCoordinates={testCoordinates}
+        isMobile={isMobile}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
       <Viewport
         config={config}
         onRef={setViewportRef}
         log={log}
+        isMobile={isMobile}
       />
       <div className="help">
-        Mouse: orbit/zoom • Shift+drag: pan • Left click/hold: spawn lava • Right click: place persistent vent
+        {isMobile 
+          ? "Touch: rotate/zoom • Two fingers: pan • Tap/hold: spawn lava • Double tap: place vent"
+          : "Mouse: orbit/zoom • Shift+drag: pan • Left click/hold: spawn lava • Right click: place persistent vent"
+        }
       </div>
     </div>
   );

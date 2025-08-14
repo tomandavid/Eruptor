@@ -23,6 +23,15 @@ export const DEFAULT_VALUES = {
   DEFAULT_COORDINATES: '28.367996, -16.559606'
 };
 
+// Mobile-optimized values for better performance
+export const MOBILE_VALUES = {
+  RESOLUTION: 512, // Lower resolution for mobile
+  ZOOM: 12, // Lower zoom level
+  LAVA_FLOW_N: 640, // Smaller lava grid
+  MAX_PIXEL_RATIO: 1.5, // Lower pixel ratio
+  ANIMATION_FPS: 30, // Lower frame rate for lava simulation
+};
+
 // UI Constants
 export const SIDEBAR_WIDTH = 360;
 export const CAMERA_SAVE_DELAY = 500;

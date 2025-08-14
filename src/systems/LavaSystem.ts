@@ -183,6 +183,11 @@ function attachClickSpawner(
 ) {
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
+  
+  // Double tap detection for mobile
+  let lastTapTime = 0;
+  let tapTimeout: number | null = null;
+  const DOUBLE_TAP_DELAY = 300; // milliseconds
 
   const createMarkerTexture = () => {
     const canvas = document.createElement('canvas');
@@ -239,13 +244,13 @@ function attachClickSpawner(
     log(`Click at UV(${uv.x.toFixed(3)}, ${uv.y.toFixed(3)}) = Lat/Lon(${coords.lat.toFixed(6)}, ${coords.lon.toFixed(6)})`, 'ok');
   };
 
-  const placeVent = (hit: THREE.Intersection) => {
+  const placeVent = (hit: THREE.Intersection, method: string = 'interaction') => {
     if (!hit.uv) return;
     
     const uv = hit.uv;
     lavaSystem.lastUV = [uv.x, uv.y];
     lavaSystem.persistentVents.push([uv.x, uv.y]);
-    log(`Persistent vent #${lavaSystem.persistentVents.length} placed with right-click.`, 'ok');
+    log(`Persistent vent #${lavaSystem.persistentVents.length} placed via ${method}.`, 'ok');
     
     // Use the external marker system
     if (lavaSystem.spawnMarker) {
@@ -265,9 +270,48 @@ function attachClickSpawner(
     const hit = hits[0];
     
     if (hit && hit.uv) {
+      // Check for double tap on touch devices (mobile)
+      const currentTime = Date.now();
+      const isTouchEvent = e.pointerType === 'touch';
+      
+      if (isTouchEvent && e.button === 0) {
+        const timeDiff = currentTime - lastTapTime;
+        
+        if (timeDiff < DOUBLE_TAP_DELAY && timeDiff > 50) {
+          // Double tap detected - place persistent vent
+          e.preventDefault();
+          placeVent(hit, 'double-tap');
+          
+          // Stop any ongoing lava flow from first tap
+          lavaSystem.holding = false;
+          lavaSystem.continuousPoint = null;
+          
+          // Clear any pending single tap timeout
+          if (tapTimeout) {
+            clearTimeout(tapTimeout);
+            tapTimeout = null;
+          }
+          
+          // Reset tap time to prevent triple tap issues
+          lastTapTime = 0;
+          return;
+        } else {
+          // Single tap - immediately start lava flow, but set up double tap detection
+          lastTapTime = currentTime;
+          
+          // Immediately start lava flow for single tap
+          lavaSystem.holding = true;
+          lavaSystem.continuousPoint = hit;
+          spawnAt(hit);
+          
+          return;
+        }
+      }
+      
+      // Non-touch events (mouse) - original behavior
       if (e.button === 2) { // Right click
         e.preventDefault();
-        placeVent(hit);
+        placeVent(hit, 'right-click');
       } else if (e.button === 0) { // Left click
         lavaSystem.holding = true;
         lavaSystem.continuousPoint = hit;

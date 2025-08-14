@@ -15,9 +15,10 @@ interface ViewportProps {
   config: AppConfig;
   onRef: (ref: any) => void;
   log: (message: string, type?: 'ok' | 'fail' | '') => void;
+  isMobile?: boolean;
 }
 
-const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
+const Viewport: React.FC<ViewportProps> = ({ config, onRef, log, isMobile = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<SceneElements | null>(null);
   const lavaRef = useRef<LavaSystem | null>(null);
@@ -90,7 +91,7 @@ const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
     if (!containerRef.current) return;
 
     const container = containerRef.current;
-    const width = window.innerWidth - SIDEBAR_WIDTH;
+    const width = isMobile ? window.innerWidth : window.innerWidth - SIDEBAR_WIDTH;
     const height = window.innerHeight;
 
     // Optimized renderer setup
@@ -103,7 +104,9 @@ const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
     });
     
     // Limit pixel ratio for better performance on high-DPI displays
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    // Use lower pixel ratio on mobile for better performance
+    const pixelRatio = isMobile ? Math.min(devicePixelRatio, 1.5) : Math.min(devicePixelRatio, 2);
+    renderer.setPixelRatio(pixelRatio);
     
     // Optimize shadow settings
     renderer.shadowMap.enabled = true;
@@ -128,10 +131,21 @@ const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
     // Enable frustum culling optimizations
     camera.matrixAutoUpdate = true;
 
-    // Controls setup
+    // Controls setup with mobile optimizations
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.dampingFactor = isMobile ? 0.1 : 0.05; // Faster damping on mobile
+    controls.rotateSpeed = isMobile ? 0.8 : 1.0; // Slightly slower rotation on mobile
+    controls.zoomSpeed = isMobile ? 0.8 : 1.2; // Adjusted zoom speed for mobile
+    controls.panSpeed = isMobile ? 0.6 : 0.8; // Slower pan on mobile
+    
+    // Touch settings for mobile
+    if (isMobile) {
+      controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+      };
+    }
 
     // Lighting setup
     const hemi = new THREE.HemisphereLight(0xbcc9ff, 0x0b1020, config.envIntensity);
@@ -258,7 +272,7 @@ const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
     const handleResize = () => {
       if (!sceneRef.current) return;
       
-      const width = window.innerWidth - SIDEBAR_WIDTH;
+      const width = isMobile ? window.innerWidth : window.innerWidth - SIDEBAR_WIDTH;
       const height = window.innerHeight;
       
       sceneRef.current.renderer.setSize(width, height);
@@ -269,7 +283,7 @@ const Viewport: React.FC<ViewportProps> = ({ config, onRef, log }) => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isMobile]);
 
   // Sun positioning function
   const setSun = (azDeg: number = 135, altDeg: number = 45, env: number = 0.6) => {

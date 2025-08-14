@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RealisticLavaSimulator } from './systems/RealisticLavaSystem';
 
 // Configuration types
 export interface AppConfig {
@@ -46,6 +47,8 @@ export interface LavaSystem {
   persistentVentsEnabled: boolean;
   persistentVents: [number, number][];
   spawnMarker?: (worldPos: THREE.Vector3) => Marker;
+  realisticSim?: RealisticLavaSimulator;
+  timeUniform?: THREE.Uniform<number>;
 }
 
 // Camera state for saving/loading

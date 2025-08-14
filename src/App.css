@@ -17,12 +17,42 @@ html, body {
   grid-template-columns: 360px 1fr;
 }
 
+/* Mobile styles */
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
 .sidebar {
   padding: 16px;
   border-right: 1px solid #1c2440;
   backdrop-filter: blur(6px);
   background: linear-gradient(180deg, rgba(20,28,56,.75), rgba(10,14,28,.65));
   overflow: auto;
+  transition: transform 0.3s ease;
+}
+
+/* Mobile sidebar styles */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1000;
+    border-right: none;
+    border-bottom: 1px solid #1c2440;
+    background: linear-gradient(180deg, rgba(20,28,56,.95), rgba(10,14,28,.9));
+    transform: translateY(-100%);
+    padding: 60px 16px 16px 16px; /* Add space for toggle button */
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateY(0);
+  }
 }
 
 .sidebar h1 {
@@ -170,4 +200,116 @@ canvas {
 .full-width {
   width: 100%;
   margin-top: 4px;
+}
+
+/* Mobile toggle button */
+.mobile-toggle {
+  display: none;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1001;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #27335f;
+  background: rgba(20,28,56,.9);
+  color: #d7e3ff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s ease;
+  backdrop-filter: blur(6px);
+  touch-action: manipulation;
+}
+
+.mobile-toggle:hover {
+  background: rgba(26,42,98,.9);
+}
+
+.mobile-close {
+  display: none;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1002;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #27335f;
+  background: rgba(20,28,56,.9);
+  color: #d7e3ff;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.2s ease;
+  backdrop-filter: blur(6px);
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle {
+    display: block;
+  }
+  
+  .mobile-close {
+    display: block;
+  }
+  
+  /* Optimize panels for mobile */
+  .panel {
+    margin: 8px 0;
+    padding: 10px;
+  }
+  
+  .panel h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .panel label {
+    font-size: 14px;
+    margin: 8px 0 6px;
+  }
+  
+  .btn {
+    padding: 12px 14px;
+    font-size: 14px;
+    min-height: 44px; /* Touch target size */
+  }
+  
+  .panel input[type="range"] {
+    height: 40px; /* Larger touch target */
+  }
+  
+  .panel input[type="text"] {
+    padding: 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+    min-height: 44px;
+  }
+  
+  .panel select {
+    padding: 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+  
+  .row {
+    gap: 12px;
+  }
+  
+  .button-row {
+    gap: 12px;
+  }
+  
+  .checkbox-row {
+    gap: 16px;
+    margin-top: 12px;
+  }
+  
+  .inline-checkbox {
+    gap: 12px;
+    min-height: 44px;
+    align-items: center;
+  }
+  
+  .help {
+    display: none; /* Hide help text on mobile */
+  }
 }
