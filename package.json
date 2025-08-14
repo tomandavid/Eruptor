@@ -2,7 +2,7 @@
   "name": "tenerife-dem-lava-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://YOUR_GITHUB_USERNAME.github.io/Eruptor",
+  "homepage": "https://tomandavid.github.io/Eruptor",
   "dependencies": {
     "@types/node": "^16.18.0",
     "@types/react": "^18.2.0",
